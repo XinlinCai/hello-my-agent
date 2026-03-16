@@ -1,4 +1,4 @@
-from langchain.tools import tool
+from langchain_classic.tools import tool
 
 
 @tool
@@ -7,6 +7,6 @@ def calculator(expression: str) -> str:
     try:
         # 安全地计算表达式（仅用于演示，生产环境需谨慎）
         result = eval(expression, {"__builtins__": {}}, {})
-        return f"计算结果: {result}"
+        return f"计算结果：{result}"
     except Exception as e:
-        return f"计算错误: {e}"
+        return f"计算错误：{e}"

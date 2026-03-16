@@ -3,3 +3,4 @@ python-dotenv
 dashscope
 langchain-community
 langchain_classic
+langgraph
