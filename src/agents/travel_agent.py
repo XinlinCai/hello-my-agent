@@ -3,7 +3,8 @@ from langchain_community.chat_models import ChatTongyi
 from config.settings import DASHSCOPE_API_KEY
 from src.tools import get_travel_info, calculate_budget, check_weather
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
+from src.core.prompts import get_system_prompt
 
 load_dotenv()
 
@@ -14,6 +15,9 @@ llm = ChatTongyi(
     temperature=0.8,
     max_tokens=2500
 )
+
+# 获取旅行 Agent 的系统提示词
+system_prompt = get_system_prompt("travel")
 
 # 旅行规划专用工具列表
 tools = [
@@ -37,7 +41,11 @@ def run_travel_agent(query: str) -> str:
         Agent 的回答
     """
     try:
-        response = travel_agent_executor.invoke({"messages": [HumanMessage(content=query)]})
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=query)
+        ]
+        response = travel_agent_executor.invoke({"messages": messages})
         if "messages" in response and len(response["messages"]) > 0:
             return response["messages"][-1].content
         return "抱歉，我无法回答这个问题。"

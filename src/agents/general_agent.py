@@ -2,8 +2,9 @@ from dotenv import load_dotenv
 from langchain_community.chat_models import ChatTongyi
 from config.settings import DASHSCOPE_API_KEY
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from src.tools import calculator
+from src.core.prompts import get_system_prompt
 
 load_dotenv()
 
@@ -15,7 +16,8 @@ llm = ChatTongyi(
     max_tokens=1500
 )
 
-
+# 获取通用 Agent 的系统提示词
+system_prompt = get_system_prompt("general")
 
 # 工具列表
 tools = [calculator]
@@ -25,9 +27,12 @@ general_agent_executor = create_react_agent(llm, tools)
 
 
 def run_general_agent(query: str):
-    """运行 Agent"""
-    response = general_agent_executor.invoke({"messages": [HumanMessage(content=query)]})
-    # 获取最后一条消息（AI 的回答）
+    """运行通用 Agent"""
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=query)
+    ]
+    response = general_agent_executor.invoke({"messages": messages})
     if "messages" in response and len(response["messages"]) > 0:
         return response["messages"][-1].content
     return "抱歉，我无法回答这个问题。"
