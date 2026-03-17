@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatTongyi
-from langchain_classic.tools import tool
 from config.settings import DASHSCOPE_API_KEY
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import HumanMessage
+from src.tools import calculator
 
 load_dotenv()
 
@@ -16,16 +16,6 @@ llm = ChatTongyi(
 )
 
 
-# 计算器工具（保持单参数）
-@tool
-def calculator(expression: str) -> str:
-    """一个简单的计算器工具，输入数学表达式，返回计算结果。"""
-    try:
-        result = eval(expression, {"__builtins__": {}}, {})
-        return f"计算结果：{result}"
-    except Exception as e:
-        return f"计算错误：{e}"
-
 
 # 工具列表
 tools = [calculator]
@@ -34,7 +24,7 @@ tools = [calculator]
 general_agent_executor = create_react_agent(llm, tools)
 
 
-def run_agent(query: str):
+def run_general_agent(query: str):
     """运行 Agent"""
     response = general_agent_executor.invoke({"messages": [HumanMessage(content=query)]})
     # 获取最后一条消息（AI 的回答）

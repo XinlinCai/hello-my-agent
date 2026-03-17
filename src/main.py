@@ -1,4 +1,4 @@
-from src.agents.general_agent import run_agent as run_general_agent
+from src.agents.general_agent import run_general_agent as run_general_agent
 from src.agents.travel_agent import run_travel_agent
 
 
