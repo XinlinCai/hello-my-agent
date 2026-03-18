@@ -13,6 +13,9 @@ from .calculator_tool import calculator
 from .travel_tools import get_travel_info, calculate_budget, check_weather
 from .code_tools import execute_python_code, validate_python_syntax, format_code, explain_code_complexity
 
+# 导入 RAG 工具（从 rag 模块）
+from src.rag.retriever import knowledge_retrieval_tool  # noqa: F401
+
 # 基础工具列表（始终包含，按功能分类）
 BASE_TOOLS_CONFIG = {
     "calculation": ["calculator"],
@@ -23,6 +26,7 @@ BASE_TOOLS_CONFIG = {
         "format_code",
         "explain_code_complexity",
     ],
+    "knowledge": ["knowledge_retrieval_tool"],  # RAG 知识检索
 }
 
 # 扁平化工具列表
