@@ -1,3 +1,4 @@
+import random
 from src.agents.general_agent import run_general_agent as run_general_agent
 from src.agents.travel_agent import run_travel_agent
 from src.agents.coding_assistant_agent import run_programming_agent
@@ -6,10 +7,10 @@ from src.rag.retriever import initialize_rag_at_startup
 
 def print_welcome_banner():
     """打印欢迎横幅"""
-    print("\n" + "=" * 70)
+    print("\n" + "═" * 70)
     print("✨  欢迎使用我的 Agent 系统  ✨")
     print(" " * 23 + "(基于阿里云千问大模型)")
-    print("=" * 70)
+    print("═" * 70)
     print("\n🎯  当前可用 Agent:")
     print("   🤖  [1] 通用问答  - 聊天、知识问答、计算")
     print("   🗺️  [2] 旅行规划  - 行程规划、预算、天气")
@@ -18,8 +19,7 @@ def print_welcome_banner():
     print("   • 直接输入问题即可开始")
     print("   • 输入数字 1/2/3 切换 Agent")
     print("   • 输入 'help' 查看帮助 | 'refresh' 刷新知识库 | 'q' 退出")
-    print("=" * 70)
-    print("\n📌  小贴士：更新知识库文件后，记得输入 'refresh' 刷新哦！\n")
+    print("═" * 70)
 
 
 def print_help_info():
@@ -39,34 +39,36 @@ def print_help_info():
     print("  ✓ 通用问答适合：日常聊天、百科知识、简单计算")
     print("  ✓ 旅行规划适合：制定计划、查询攻略、预算评估")
     print("  ✓ 编程专家适合：写代码、改 Bug、技术咨询、架构设计")
-    print("\n💬  示例问题:")
-    print("  • '什么是人工智能？'")
-    print("  • '帮我规划一个去云南的 5 天行程'")
-    print("  • '用 Python 写一个快速排序'")
     print("─" * 70)
 
 
 def print_agent_switch(agent_name: str, emoji: str):
     """打印 Agent 切换提示"""
     print(f"\n✅ 已切换至 {agent_name} {emoji}")
+    print(f"💡 现在可以向{agent_name}提问了！")
 
 
 def print_error_message(error_msg: str):
     """打印错误提示"""
-    print(f"\n❌ 哎呀，出了点问题：{error_msg}")
-    print("💡 建议：请检查输入，或尝试切换其他 Agent")
+    print(f"\n❌ 哎呀，出了点问题:")
+    print(f"错误信息：{error_msg}")
+    print(f"\n💡 建议:")
+    print("   • 检查输入是否正确")
+    print("   • 尝试简化问题或换个问法")
+    print("   • 切换其他 Agent 试试")
+    print("   • 如果问题持续，请联系管理员")
 
 
 def main():
     # 程序启动时预加载 RAG 知识库（只加载一次）
     print("\n🚀 正在启动 Agent 系统...")
     success = initialize_rag_at_startup()
-    
+
     if success:
         print("✅ 系统就绪！\n")
     else:
         print("⚠️  知识库初始化失败，但基本功能仍可使用\n")
-    
+
     print_welcome_banner()
 
     # 默认使用通用问答 Agent
@@ -79,24 +81,25 @@ def main():
             "travel": {"prefix": "[旅行规划]", "name": "旅行规划 Agent", "emoji": "🗺️"},
             "programming": {"prefix": "[编程专家]", "name": "编程专家 Agent", "emoji": "💻"}
         }
-        
+
         config = agent_config.get(current_agent, agent_config["general"])
         prefix = f"{config['emoji']} {config['prefix']}"
         agent_name = config["name"]
 
-        user_input = input(f"\n{prefix} 请输入你的问题：").strip()
+        # 显示更友好的输入提示
+        user_input = input(f"{prefix} 请输入你的问题：").strip()
         # 处理空输入
         if not user_input:
-            print("⚠️  输入为空，请重新输入")
+            print("⚠️  输入为空，请输入一些问题或输入 'help' 查看帮助")
             continue
-                
+
         # 处理特殊命令
         if user_input.lower() in ['q', 'quit', 'exit']:
             print("\n" + "✨" * 35)
             print(" " * 15 + "感谢使用，再见！祝你有美好的一天！🌟")
             print("✨" * 35)
             break
-        
+
         # 新增：刷新知识库命令
         if user_input.lower() == 'refresh':
             from src.rag.retriever import get_global_knowledge_base
@@ -108,8 +111,9 @@ def main():
             except Exception as e:
                 print(f"\n❌ 刷新失败：{e}")
             continue
-                
-        if user_input.lower() in ['h', 'help', '帮助']:
+
+        # 支持更多帮助命令别名
+        if user_input.lower() in ['h', 'help', '帮助', '?']:
             print_help_info()
             continue
 
@@ -129,20 +133,23 @@ def main():
 
         # 处理用户问题
         try:
-            print(f"\n⏳ {agent_name} 思考中...")
-                    
+            # 显示思考状态动画
+            loading_messages = [
+                f"⏳ {agent_name}正在思考中...",
+                f"🧠 {agent_name}分析您的问题...",
+                f"💭 {agent_name}准备回答中...",
+            ]
+            print(f"\n{random.choice(loading_messages)}")
             if current_agent == "general":
                 response = run_general_agent(user_input)
             elif current_agent == "travel":
                 response = run_travel_agent(user_input)
             elif current_agent == "programming":
                 response = run_programming_agent(user_input)
-                    
-            print(f"\n{'─' * 70}")
-            print(f"💬 {agent_name} 的回答:")
-            print(f"{'─' * 70}")
+
+            # 美化输出格式
+            print(f"\n💬 {agent_name}的回答:")
             print(response)
-            print(f"{'─' * 70}\n")
         except Exception as e:
             print_error_message(str(e))
 
