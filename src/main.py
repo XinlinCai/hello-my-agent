@@ -18,12 +18,14 @@ def print_welcome_banner():
     print("\n💡  快速上手:")
     print("   • 直接输入问题即可开始")
     print("   • 输入数字 1/2/3 切换 Agent")
+    print("   • 输入 'v' 切换思考过程显示 (开/关)")
     print("   • 输入 'help' 查看帮助 | 'refresh' 刷新知识库 | 'q' 退出")
     print("═" * 70)
 
 
-def print_help_info():
+def print_help_info(show_verbose: bool):
     """打印详细帮助信息"""
+    verbose_status = "✅ 开启" if show_verbose else "❌ 关闭"
     print("\n" + "─" * 70)
     print("📖  使用帮助")
     print("─" * 70)
@@ -33,12 +35,16 @@ def print_help_info():
     print("  3 或 3️⃣    → 切换到编程专家 Agent")
     print("\n【常用命令】")
     print("  help       → 📖 显示此帮助信息")
+    print("  v          → 👁️ 切换思考过程显示 (当前：{})".format(verbose_status))
     print("  refresh    → 🔄 刷新知识库（更新本地文档后使用）")
     print("  q          → ❌ 退出程序")
     print("\n【使用技巧】")
     print("  ✓ 通用问答适合：日常聊天、百科知识、简单计算")
     print("  ✓ 旅行规划适合：制定计划、查询攻略、预算评估")
     print("  ✓ 编程专家适合：写代码、改 Bug、技术咨询、架构设计")
+    print("\n【思考过程显示】")
+    print("  • 开启时可查看 AI 的推理过程和工具调用")
+    print("  • 关闭时只显示最终回答，界面更简洁")
     print("─" * 70)
 
 
@@ -73,6 +79,8 @@ def main():
 
     # 默认使用通用问答 Agent
     current_agent = "general"
+    # 新增：思考过程显示开关（默认开启）
+    show_verbose = True
 
     while True:
         # 根据当前 Agent 显示提示符
@@ -114,7 +122,15 @@ def main():
 
         # 支持更多帮助命令别名
         if user_input.lower() in ['h', 'help', '帮助', '?']:
-            print_help_info()
+            print_help_info(show_verbose)
+            continue
+        
+        # 切换思考过程显示
+        if user_input.lower() == 'v':
+            show_verbose = not show_verbose
+            status = "✅ 已开启" if show_verbose else "❌ 已关闭"
+            print(f"\n👁️ 思考过程显示：{status}")
+            print(f"💡 现在使用通用Agent 时会{'显示' if show_verbose else '隐藏'}思考过程")
             continue
 
         # 切换 Agent
@@ -141,7 +157,7 @@ def main():
             ]
             print(f"\n{random.choice(loading_messages)}")
             if current_agent == "general":
-                response = run_general_agent(user_input)
+                response = run_general_agent(user_input, verbose=show_verbose)
             elif current_agent == "travel":
                 response = run_travel_agent(user_input)
             elif current_agent == "programming":
