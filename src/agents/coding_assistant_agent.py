@@ -5,6 +5,7 @@ from src.tools.code_tools import execute_python_code, validate_python_syntax, fo
 from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import HumanMessage, SystemMessage
 from src.core.prompts import get_system_prompt
+from src.rag import knowledge_retrieval_tool
 
 load_dotenv()
 
@@ -21,10 +22,11 @@ system_prompt = get_system_prompt("programming_expert")
 
 # 编程专用工具列表
 tools = [
-    execute_python_code,      # 执行 Python 代码
-    validate_python_syntax,   # 验证语法
-    format_code,              # 格式化代码
-    explain_code_complexity,  # 分析复杂度
+    execute_python_code,          # 执行 Python 代码
+    validate_python_syntax,       # 验证语法
+    format_code,                  # 格式化代码
+    explain_code_complexity,      # 分析复杂度
+    knowledge_retrieval_tool,     # 知识检索（RAG）
 ]
 
 # 使用 LangGraph 创建 ReAct Agent（支持多参数工具）

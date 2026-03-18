@@ -4,3 +4,6 @@ dashscope
 langchain-community
 langchain_classic
 langgraph
+faiss-cpu>=1.7.4
+langchain-text-splitters
+pypdf>=3.0.0
