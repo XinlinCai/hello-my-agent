@@ -126,6 +126,7 @@ class KnowledgeBase:
         Returns:
             bool: 是否成功构建
         """
+        # 如果已有向量库且不强制重建，直接返回成功
         if self.vectorstore and not force_rebuild:
             return True
         
@@ -136,6 +137,13 @@ class KnowledgeBase:
         
         self.vectorstore = FAISS.from_documents(docs, self.embeddings)
         return True
+    
+    def clear_cache(self):
+        """
+        清除缓存的向量库（用于手动刷新）
+        """
+        self.vectorstore = None
+        print("🔄 知识库缓存已清除，下次查询将重新加载")
     
     def search(self, query: str, k: int = 3) -> str:
         """

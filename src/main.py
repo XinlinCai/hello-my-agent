@@ -1,22 +1,73 @@
 from src.agents.general_agent import run_general_agent as run_general_agent
 from src.agents.travel_agent import run_travel_agent
 from src.agents.coding_assistant_agent import run_programming_agent
+from src.rag.retriever import initialize_rag_at_startup
+
+
+def print_welcome_banner():
+    """打印欢迎横幅"""
+    print("\n" + "=" * 70)
+    print("✨  欢迎使用我的 Agent 系统  ✨")
+    print(" " * 23 + "(基于阿里云千问大模型)")
+    print("=" * 70)
+    print("\n🎯  当前可用 Agent:")
+    print("   🤖  [1] 通用问答  - 聊天、知识问答、计算")
+    print("   🗺️  [2] 旅行规划  - 行程规划、预算、天气")
+    print("   💻  [3] 编程专家  - 代码编写、调试、优化")
+    print("\n💡  快速上手:")
+    print("   • 直接输入问题即可开始")
+    print("   • 输入数字 1/2/3 切换 Agent")
+    print("   • 输入 'help' 查看帮助 | 'refresh' 刷新知识库 | 'q' 退出")
+    print("=" * 70)
+    print("\n📌  小贴士：更新知识库文件后，记得输入 'refresh' 刷新哦！\n")
+
+
+def print_help_info():
+    """打印详细帮助信息"""
+    print("\n" + "─" * 70)
+    print("📖  使用帮助")
+    print("─" * 70)
+    print("\n【切换 Agent】")
+    print("  1 或 1️⃣    → 切换到通用问答 Agent")
+    print("  2 或 2️⃣    → 切换到旅行规划 Agent")
+    print("  3 或 3️⃣    → 切换到编程专家 Agent")
+    print("\n【常用命令】")
+    print("  help       → 📖 显示此帮助信息")
+    print("  refresh    → 🔄 刷新知识库（更新本地文档后使用）")
+    print("  q          → ❌ 退出程序")
+    print("\n【使用技巧】")
+    print("  ✓ 通用问答适合：日常聊天、百科知识、简单计算")
+    print("  ✓ 旅行规划适合：制定计划、查询攻略、预算评估")
+    print("  ✓ 编程专家适合：写代码、改 Bug、技术咨询、架构设计")
+    print("\n💬  示例问题:")
+    print("  • '什么是人工智能？'")
+    print("  • '帮我规划一个去云南的 5 天行程'")
+    print("  • '用 Python 写一个快速排序'")
+    print("─" * 70)
+
+
+def print_agent_switch(agent_name: str, emoji: str):
+    """打印 Agent 切换提示"""
+    print(f"\n✅ 已切换至 {agent_name} {emoji}")
+
+
+def print_error_message(error_msg: str):
+    """打印错误提示"""
+    print(f"\n❌ 哎呀，出了点问题：{error_msg}")
+    print("💡 建议：请检查输入，或尝试切换其他 Agent")
 
 
 def main():
-    print("\n" + "=" * 60)
-    print("🎉 欢迎使用我的 Agent 系统 (基于阿里云千问大模型)")
-    print("=" * 60)
-    print("\n📋 可用的 Agent:")
-    print("  1️⃣  通用问答 Agent - 聊天、知识问答、计算等")
-    print("  2️⃣  旅行规划 Agent - 行程规划、预算计算、天气查询等")
-    print("  3️⃣  编程专家 Agent - 代码编写、调试、优化、架构设计")
-    print("\n💡 快速开始:")
-    print("  • 直接输入问题，当前 Agent 会为你解答")
-    print("  • 输入数字 1/2/3 切换不同的 Agent")
-    print("  • 输入 'h' 查看详细帮助")
-    print("  • 输入 'q' 退出程序")
-    print("=" * 60)
+    # 程序启动时预加载 RAG 知识库（只加载一次）
+    print("\n🚀 正在启动 Agent 系统...")
+    success = initialize_rag_at_startup()
+    
+    if success:
+        print("✅ 系统就绪！\n")
+    else:
+        print("⚠️  知识库初始化失败，但基本功能仍可使用\n")
+    
+    print_welcome_banner()
 
     # 默认使用通用问答 Agent
     current_agent = "general"
@@ -30,11 +81,10 @@ def main():
         }
         
         config = agent_config.get(current_agent, agent_config["general"])
-        prefix = f"{config['emoji']}{config['prefix']}"
+        prefix = f"{config['emoji']} {config['prefix']}"
         agent_name = config["name"]
 
         user_input = input(f"\n{prefix} 请输入你的问题：").strip()
-
         # 处理空输入
         if not user_input:
             print("⚠️  输入为空，请重新输入")
@@ -42,44 +92,44 @@ def main():
                 
         # 处理特殊命令
         if user_input.lower() in ['q', 'quit', 'exit']:
-            print("\n👋 感谢使用，再见！祝你有美好的一天！✨")
+            print("\n" + "✨" * 35)
+            print(" " * 15 + "感谢使用，再见！祝你有美好的一天！🌟")
+            print("✨" * 35)
             break
+        
+        # 新增：刷新知识库命令
+        if user_input.lower() == 'refresh':
+            from src.rag.retriever import get_global_knowledge_base
+            try:
+                kb = get_global_knowledge_base()
+                kb.clear_cache()
+                get_global_knowledge_base(force_init=True)  # 重新加载
+                print("\n🔄 知识库已刷新，最新内容已加载！")
+            except Exception as e:
+                print(f"\n❌ 刷新失败：{e}")
+            continue
                 
-        if user_input.lower() == 'h':
-            print("\n" + "=" * 60)
-            print("📖 详细使用帮助:")
-            print("=" * 60)
-            print("\n【切换 Agent】")
-            print("  1         - 切换到通用问答 Agent")
-            print("  2         - 切换到旅行规划 Agent")
-            print("  3         - 切换到编程专家 Agent")
-            print("\n【其他命令】")
-            print("  h         - 显示此帮助信息")
-            print("  q         - 退出程序")
-            print("\n【使用建议】")
-            print("  • 通用问答：适合日常聊天、知识查询、简单计算")
-            print("  • 旅行规划：制定旅行计划、查询目的地信息、预算规划")
-            print("  • 编程专家：代码编写、调试、优化、技术咨询")
-            print("=" * 60)
+        if user_input.lower() in ['h', 'help', '帮助']:
+            print_help_info()
             continue
 
         # 切换 Agent
-        if user_input == '1':
+        if user_input in ['1', '1️⃣']:
             current_agent = "general"
-            print("✅ 已切换到通用问答 Agent 🤖")
+            print_agent_switch("通用问答", "🤖")
             continue
-        elif user_input == '2':
+        elif user_input in ['2', '2️⃣']:
             current_agent = "travel"
-            print("✅ 已切换到旅行规划 Agent 🗺️")
+            print_agent_switch("旅行规划", "🗺️")
             continue
-        elif user_input == '3':
+        elif user_input in ['3', '3️⃣']:
             current_agent = "programming"
-            print("✅ 已切换到编程专家 Agent 💻")
+            print_agent_switch("编程专家", "💻")
             continue
 
         # 处理用户问题
         try:
-            print(f"\n⏳ {agent_name} 正在思考中...")
+            print(f"\n⏳ {agent_name} 思考中...")
                     
             if current_agent == "general":
                 response = run_general_agent(user_input)
@@ -88,12 +138,13 @@ def main():
             elif current_agent == "programming":
                 response = run_programming_agent(user_input)
                     
-            print(f"\n💬 {agent_name} 回答:\n{'-' * 60}")
+            print(f"\n{'─' * 70}")
+            print(f"💬 {agent_name} 的回答:")
+            print(f"{'─' * 70}")
             print(response)
-            print('-' * 60)
+            print(f"{'─' * 70}\n")
         except Exception as e:
-            print(f"\n❌ 抱歉，发生错误：{e}")
-            print("💡 建议：请检查输入是否正确，或尝试切换到其他 Agent 寻求帮助")
+            print_error_message(str(e))
 
 
 if __name__ == "__main__":
