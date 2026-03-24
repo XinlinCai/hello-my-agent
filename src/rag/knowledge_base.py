@@ -39,7 +39,7 @@ class KnowledgeBase:
         
         # 初始化嵌入模型
         self.embeddings = DashScopeEmbeddings(
-            model="text-embedding-v2",
+            model="text-embedding-v1",
             dashscope_api_key=os.getenv("DASHSCOPE_API_KEY")
         )
         
