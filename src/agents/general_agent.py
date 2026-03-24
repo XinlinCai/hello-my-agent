@@ -5,6 +5,7 @@ from langgraph.prebuilt import create_react_agent
 from langchain_core.messages import HumanMessage, SystemMessage
 from src.tools import discover_tools
 from src.core.prompts import get_system_prompt
+from src.core.memory.manager import MemoryManager
 
 load_dotenv()
 
@@ -46,6 +47,9 @@ tools = discover_tools(
 # 使用 LangGraph 创建 ReAct Agent（支持多参数工具）
 general_agent_executor = create_react_agent(llm, tools)
 
+# 初始化记忆管理器
+agent_memory = MemoryManager(user_id="default_user")
+
 
 def run_general_agent(query: str, verbose: bool = True):
     """
@@ -58,17 +62,20 @@ def run_general_agent(query: str, verbose: bool = True):
     返回:
         Agent 的回答
     """
-    messages = [
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=query)
-    ]
+    # 使用记忆管理器构建优化的上下文
+    messages = agent_memory.get_context(query, system_prompt)
+    messages.append(HumanMessage(content=query))
+    
     response = general_agent_executor.invoke({"messages": messages})
     
     # 打印思考链路过程
     print_thought_process(response, verbose)
     
     if "messages" in response and len(response["messages"]) > 0:
-        return response["messages"][-1].content
+        ai_response = response["messages"][-1].content
+        # 保存交互到记忆
+        agent_memory.add_interaction(query, ai_response)
+        return ai_response
     return "抱歉，我无法回答这个问题。"
 
 

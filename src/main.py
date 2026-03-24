@@ -19,7 +19,8 @@ def print_welcome_banner():
     print("   • 直接输入问题即可开始")
     print("   • 输入数字 1/2/3 切换 Agent")
     print("   • 输入 'v' 切换思考过程显示 (开/关)")
-    print("   • 输入 'help' 查看帮助 | 'refresh' 刷新知识库 | 'q' 退出")
+    print("   • 输入 'memory' 查看当前记忆状态 | 'clear' 清空短期记忆 | 'profile' 查看用户画像")
+    print("   • 输入 'help' 查看更多帮助 | 'refresh' 刷新知识库 | 'q' 退出")
     print("═" * 70)
 
 
@@ -37,6 +38,11 @@ def print_help_info(show_verbose: bool):
     print("  help       → 📖 显示此帮助信息")
     print("  v          → 👁️ 切换思考过程显示 (当前：{})".format(verbose_status))
     print("  refresh    → 🔄 刷新知识库（更新本地文档后使用）")
+    print("  memory     → 💾 查看当前记忆状态")
+    print("  clear      → 🗑️ 清空短期记忆（保留用户画像）")
+    print("  reset      → 💥 清空所有记忆（包括用户画像）")
+    print("  profile    → 👤 查看用户画像")
+    print("  storage    → 📁 查看存储信息")
     print("  q          → ❌ 退出程序")
     print("\n【使用技巧】")
     print("  ✓ 通用问答适合：日常聊天、百科知识、简单计算")
@@ -145,6 +151,48 @@ def main():
         elif user_input in ['3', '3️⃣']:
             current_agent = "programming"
             print_agent_switch("编程专家", "💻")
+            continue
+        
+        # 记忆管理命令
+        if user_input.lower() == 'memory':
+            from src.agents.general_agent import agent_memory
+            summary = agent_memory.get_summary()
+            print("\n💾 记忆状态:")
+            print(f"   短期记忆：{summary['short_term_turns']}轮对话")
+            print(f"   长期记忆：{summary['long_term_facts_count']}条用户信息")
+            continue
+        
+        if user_input.lower() in ['clear', 'cls']:
+            from src.agents.general_agent import agent_memory
+            agent_memory.clear_short_term()
+            print("\n🗑️ 短期记忆已清空!（用户画像保留）")
+            continue
+        
+        if user_input.lower() == 'reset':
+            from src.agents.general_agent import agent_memory
+            agent_memory.clear_all()
+            print("\n💥 所有记忆已清空!（包括用户画像）")
+            continue
+        
+        if user_input.lower() == 'storage':
+            from src.agents.general_agent import agent_memory
+            info = agent_memory.get_storage_info()
+            print("\n📁 存储信息:")
+            print(f"   文件路径：{info['storage_path']}")
+            print(f"   文件存在：{'✅' if info['file_exists'] else '❌'}")
+            print(f"   用户 ID: {info['user_id']}")
+            print(f"   画像数据：{info['preferences_count']}条")
+            continue
+        
+        if user_input.lower() == 'profile':
+            from src.agents.general_agent import agent_memory
+            prefs = agent_memory.long_term.get_all_preferences()
+            print("\n👤 用户画像:")
+            if not prefs:
+                print("   (暂无记录的用户信息)")
+            else:
+                for k, v in prefs.items():
+                    print(f"   • {k}: {v}")
             continue
 
         # 处理用户问题
